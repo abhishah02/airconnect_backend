@@ -46,7 +46,7 @@ module.exports = {
       const payload = {};
       const secret = process.env.REFRESH_TOKEN_SECRET;
       const options = {
-        expiresIn: "1y",
+        expiresIn: "2y",
         issuer: "airconnect.com",
         audience: admin_id,
       };
