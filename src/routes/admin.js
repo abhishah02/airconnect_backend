@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const knex = require("../../db/config");
+const uuid = require("uuid");
 const bcrypt = require("bcrypt");
 const createError = require("http-errors");
 
@@ -9,17 +10,18 @@ const { signAccessToken, verifyAccessToken } = require("../helpers/jwt_helper");
 
 const admin = async (req, res) => {
   try {
-    const result = await authSchema.validateAsync(req.body);
+    // const result = await authSchema.validateAsync(req.body);
 
-    const email = result.admin_email;
-    const password = result.admin_password;
+    const email = req.body.admin_email;
+    const password = req.body.admin_password;
 
     const admin = await knex(process.env.ADMIN_TABLE_NAME)
       .first("*")
-      .where({ admin_email: email });
+      .where({ admin_email: email })
+      .orWhere({ admin_number: email });
 
     // console.log(user.USER_CONTACT_NUMBER + " ," + user.USER_EMAIL);
-    if (admin) {
+    if (admin.admin_email || admin.admin_number) {
       const validPass = await bcrypt.compare(password, admin.admin_password);
       const accessToken = await signAccessToken(admin.admin_id);
       if (validPass) {
@@ -27,7 +29,12 @@ const admin = async (req, res) => {
         return res.json({
           accessToken,
 
-          user: { id: admin.admin_id, st: true, msg: "login success" },
+          user: {
+            id: admin.admin_id,
+            role: admin.ADMIN_ROLE_ID,
+            st: true,
+            msg: "login success",
+          },
         });
       } else {
         return res.json({ st: false, msg: "fail " });

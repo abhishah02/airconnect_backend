@@ -15,8 +15,18 @@ const admin = require("./src/routes/admin");
 const profile = require("./src/routes/admin");
 const reset = require("./src/routes/admin");
 
-const addCategory = require("./src/routes/category");
-const getCategory = require("./src/routes/category");
+const sub_admin = require("./src/routes/sub_admin");
+
+const category = require("./src/routes/category");
+
+const product = require("./src/routes/product");
+
+const customer = require("./src/routes/customer");
+
+const hsn = require("./src/routes/hsn");
+
+const sales = require("./src/routes/sales");
+
 const path = require("path");
 // const { path } = require("express/lib/application");
 // const { verifyAccessToken } = require("./src/helpers/jwt_helper");
@@ -39,9 +49,23 @@ app.use("/admin", admin);
 app.use("/admin/profile", profile);
 app.use("/admin", reset);
 
+//sub-admin
+app.use("/", sub_admin);
+
 //Category API
-app.use("/", addCategory);
-app.use("/", getCategory);
+app.use("/", category);
+
+//Product API
+app.use("/", product);
+
+//Customer API
+app.use("/", customer);
+
+//HSN MASTER API
+app.use("/", hsn);
+
+//Sales API
+app.use("/", sales);
 
 //internal server error
 app.use((err, req, res, next) => {
