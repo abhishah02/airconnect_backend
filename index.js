@@ -11,9 +11,8 @@ require("dotenv").config();
 const knex = require("./db/config");
 const register = require("./src/routes/user");
 const login = require("./src/routes/user");
+
 const admin = require("./src/routes/admin");
-const profile = require("./src/routes/admin");
-const reset = require("./src/routes/admin");
 
 const sub_admin = require("./src/routes/sub_admin");
 
@@ -45,9 +44,7 @@ app.use("/", register);
 app.use("/", login);
 
 //ADMIN API
-app.use("/admin", admin);
-app.use("/admin/profile", profile);
-app.use("/admin", reset);
+app.use("/", admin);
 
 //sub-admin
 app.use("/", sub_admin);
