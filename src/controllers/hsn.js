@@ -1,24 +1,44 @@
 const knex = require("../../db/config");
 
-async function addHsn(req, res) {
-  const insertData = {
-    HSN_CODE: req.body.HSN_CODE,
-    IGST: req.body.IGST,
-    CGST: req.body.CGST,
-    SGST: req.body.SGST,
-    DESCRIPTION: req.body.DESCRIPTION,
-    CREATED_TIME: new Date(),
-  };
-  //   console.log(req.body);
-  //   console.log(insertData);
-  const insert = await knex("hsn_master").insert(insertData);
+async function insertEditHsn(req, res) {
+  const { HSN_ID, HSN_CODE, IGST, CGST, SGST, DESCRIPTION } = req.body;
 
-  if (insert) {
-    console.log("Done");
-    return res.json({ st: true, msg: "Insert data successfully." });
+  const getHsn = await knex("hsn_master").where("HSN_ID", HSN_ID).first();
+
+  var data = {
+    HSN_CODE: HSN_CODE,
+    IGST: IGST,
+    CGST: CGST,
+    SGST: SGST,
+    DESCRIPTION: DESCRIPTION,
+  };
+
+  if (getHsn) {
+    data.UPDATED_TIME = new Date();
+
+    const update = await knex("hsn_master")
+      .update(data)
+      .where({ HSN_ID: HSN_ID });
+
+    if (update) {
+      console.log("Update");
+      return res.json({ st: true, msg: "Update data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Update data Failed." });
+    }
   } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Insert data Failed." });
+    data.CREATED_TIME = new Date();
+
+    const insert = await knex("hsn_master").insert(data);
+
+    if (insert) {
+      console.log("Done");
+      return res.json({ st: true, msg: "Insert data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Insert data Failed." });
+    }
   }
 }
 
@@ -79,34 +99,10 @@ async function deleteHsn(req, res) {
   }
 }
 
-async function updateHsn(req, res) {
-  const id = req.body.HSN_ID;
-  var Data = {
-    HSN_CODE: req.body.HSN_CODE,
-    IGST: req.body.IGST,
-    CGST: req.body.CGST,
-    SGST: req.body.SGST,
-    DESCRIPTION: req.body.DESCRIPTION,
-
-    UPDATED_TIME: new Date(),
-  };
-
-  const update = await knex("hsn_master").update(Data).where({ HSN_ID: id });
-
-  if (update) {
-    console.log("Update");
-    return res.json({ st: true, msg: "Update data successfully." });
-  } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Update data Failed." });
-  }
-}
-
 const hsn = {
-  addHsn,
+  insertEditHsn,
   getHSN,
   deleteHsn,
-  updateHsn,
 };
 
 module.exports = hsn;

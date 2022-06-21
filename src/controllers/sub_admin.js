@@ -1,58 +1,54 @@
 const knex = require("../../db/config");
 const bcrypt = require("bcrypt");
 
-async function addSubAdmin(req, res) {
-  // const admin_number = req.body.admin_number;
-  const admin_email = req.body.admin_email;
+async function insertEditAdmin(req, res) {
+  const {
+    id,
+    admin_name,
+    admin_number,
+    admin_email,
+    admin_password,
+    ADMIN_ROLE_ID,
+  } = req.body;
 
-  const check_email = await knex("tbl_admin")
-    .select("admin_email")
-    .where("admin_email", admin_email);
+  const getAdmin = await knex("tbl_admin").where("id", id).first();
 
-  if (check_email.length === 0) {
-    bcrypt.genSalt(async (err, salt) => {
-      const insertData = {
-        admin_id: uuid.v4(req.body.admin_id),
-        admin_name: req.body.admin_name,
-        admin_number: req.body.admin_number,
-        admin_email: req.body.admin_email,
-        admin_password: await bcrypt.hash(req.body.admin_password, salt),
-        ADMIN_ROLE_ID: req.body.ADMIN_ROLE_ID,
-      };
-      const insert = await knex("tbl_admin").insert(insertData);
-      if (insert) {
-        return res.json({ st: true, msg: "Insert data successfully." });
-      } else {
-        return res.json({ st: false, msg: "Insert data Failed." });
-      }
-    });
+  const salt = bcrypt.genSaltSync(10);
+  var hash = bcrypt.hashSync(admin_password, salt);
+
+  var data = {
+    admin_name: admin_name,
+    admin_number: admin_number,
+    admin_email: admin_email,
+    admin_password: hash,
+    ADMIN_ROLE_ID: ADMIN_ROLE_ID,
+  };
+
+  if (getAdmin) {
+    await knex("tbl_admin").where({ id: id }).update(data);
+    return res.json({ st: true, msg: "Update data successfully." });
   } else {
-    return res.json({ st: false, msg: "Email already inserted." });
-  }
-}
+    const checkAdmin = await knex("tbl_admin")
+      .where(function () {
+        this.where("admin_email", admin_email).orWhere(
+          "admin_number",
+          admin_number
+        );
+      })
+      .where("IS_DELETE", 0)
+      .first();
 
-async function updateSubAdmin(req, res) {
-  const id = req.body.id;
-
-  bcrypt.genSalt(async (err, salt) => {
-    var Data = {
-      admin_name: req.body.admin_name,
-      admin_number: req.body.admin_number,
-      admin_email: req.body.admin_email,
-      admin_password: await bcrypt.hash(req.body.admin_password, salt),
-      ADMIN_ROLE_ID: req.body.ADMIN_ROLE_ID,
-    };
-
-    const update = await knex("tbl_admin").update(Data).where({ id: id });
-
-    if (update) {
-      console.log("Update");
-      return res.json({ st: true, msg: "Update data successfully." });
-    } else {
-      console.log("Fail");
-      return res.json({ st: true, msg: "Update data Failed." });
+    if (checkAdmin) {
+      return res.json({
+        st: false,
+        msg: "Email or Mobile No. Already Registered!!!",
+      });
     }
-  });
+
+    await knex("tbl_admin").insert(data);
+
+    return res.json({ st: true, msg: "Insert data successfully." });
+  }
 }
 
 async function getRole(req, res) {
@@ -137,8 +133,7 @@ async function deleteSubAdmin(req, res) {
 }
 
 const subAdmin = {
-  addSubAdmin,
-  updateSubAdmin,
+  insertEditAdmin,
   getRole,
   getSubAdmin,
   deleteSubAdmin,

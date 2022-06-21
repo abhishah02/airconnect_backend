@@ -4,13 +4,11 @@ const router = express.Router();
 
 const { verifyAccessToken } = require("../helpers/jwt_helper");
 
-router.post("/addSubAdmin", verifyAccessToken, subAdmin.addSubAdmin);
+router.post("/insertEditAdmin", verifyAccessToken, subAdmin.insertEditAdmin);
 
 router.get("/getRole", verifyAccessToken, subAdmin.getRole);
 
 router.get("/getSubAdmin", verifyAccessToken, subAdmin.getSubAdmin);
-
-router.post("/updateSubAdmin", verifyAccessToken, subAdmin.updateSubAdmin);
 
 router.post("/deleteSubAdmin", verifyAccessToken, subAdmin.deleteSubAdmin);
 

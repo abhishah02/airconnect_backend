@@ -36,17 +36,10 @@ const upload = multer({
 });
 
 router.post(
-  "/addProduct",
+  "/insertEditProduct",
   verifyAccessToken,
   upload.single("PRODUCT_IMAGE"),
-  product.addProduct
-);
-
-router.post(
-  "/updateProduct",
-  verifyAccessToken,
-  upload.single("PRODUCT_IMAGE"),
-  product.updateProduct
+  product.insertEditProduct
 );
 
 router.get("/getProduct", verifyAccessToken, product.getProduct);

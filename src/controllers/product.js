@@ -1,52 +1,56 @@
 const knex = require("../../db/config");
 
-async function addProduct(req, res) {
-  const insertData = {
-    CATEGORY_ID: req.body.CATEGORY_ID,
-    HSN_ID: req.body.HSN_ID,
-    PRODUCT_NAME: req.body.PRODUCT_NAME,
-    PRODUCT_PRICE: req.body.PRODUCT_PRICE,
-    PRODUCT_DESCRIPTION: req.body.PRODUCT_DESCRIPTION,
-    PRODUCT_IMAGE: "product-images/" + req.file.filename,
-    CREATED_TIME: new Date(),
+async function insertEditProduct(req, res) {
+  const {
+    PRODUCT_ID,
+    CATEGORY_ID,
+    HSN_ID,
+    PRODUCT_NAME,
+    PRODUCT_PRICE,
+    PRODUCT_DESCRIPTION,
+  } = req.body;
+
+  const getProduct = await knex("tbl_product")
+    .where("PRODUCT_ID", PRODUCT_ID)
+    .first();
+
+  var data = {
+    CATEGORY_ID: CATEGORY_ID,
+    HSN_ID: HSN_ID,
+    PRODUCT_NAME: PRODUCT_NAME,
+    PRODUCT_PRICE: PRODUCT_PRICE,
+    PRODUCT_DESCRIPTION: PRODUCT_DESCRIPTION,
   };
 
-  const insert = await knex("tbl_product").insert(insertData);
+  if (getProduct) {
+    if (req.file) {
+      data.PRODUCT_IMAGE = "product-images/" + req.file.filename;
+    }
+    data.UPDATED_TIME = new Date();
+    const update = await knex("tbl_product")
+      .update(data)
+      .where({ PRODUCT_ID: PRODUCT_ID });
 
-  if (insert) {
-    console.log("Done");
-    return res.json({ st: true, msg: "Insert data successfully." });
+    if (update) {
+      console.log("Update");
+      return res.json({ st: true, msg: "Update data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Update data Failed." });
+    }
   } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Insert data Failed." });
-  }
-}
+    data.PRODUCT_IMAGE = "product-images/" + req.file.filename;
+    data.CREATED_TIME = new Date();
 
-async function updateProduct(req, res) {
-  const id = req.body.PRODUCT_ID;
+    const insert = await knex("tbl_product").insert(data);
 
-  var Data = {
-    CATEGORY_ID: req.body.CATEGORY_ID,
-    HSN_ID: req.body.HSN_ID,
-    PRODUCT_NAME: req.body.PRODUCT_NAME,
-    PRODUCT_PRICE: req.body.PRODUCT_PRICE,
-    PRODUCT_DESCRIPTION: req.body.PRODUCT_DESCRIPTION,
-    UPDATED_TIME: new Date(),
-    // PRODUCT_IMAGE: Data.IMAGE[0].DESCRIPTION_IMAGE,
-  };
-  if (req.file) {
-    Data.PRODUCT_IMAGE = "product-images/" + req.file.filename;
-  }
-  const update = await knex("tbl_product")
-    .update(Data)
-    .where({ PRODUCT_ID: id });
-
-  if (update) {
-    console.log("Update");
-    return res.json({ st: true, msg: "Update data successfully." });
-  } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Update data Failed." });
+    if (insert) {
+      console.log("Done");
+      return res.json({ st: true, msg: "Insert data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Insert data Failed." });
+    }
   }
 }
 
@@ -159,8 +163,8 @@ async function deleteProduct(req, res) {
 }
 
 const product = {
-  addProduct,
-  updateProduct,
+  insertEditProduct,
+
   getCategoryData,
   getHsnData,
   getProduct,

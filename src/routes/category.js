@@ -35,17 +35,10 @@ const upload = multer({
 });
 
 router.post(
-  "/updateCategory",
+  "/insertEditCategory",
   verifyAccessToken,
   upload.single("DESCRIPTION_IMAGE"),
-  category.updateCategory
-);
-
-router.post(
-  "/Category",
-  verifyAccessToken,
-  upload.single("DESCRIPTION_IMAGE"),
-  category.addCategory
+  category.insertEditCategory
 );
 
 router.get("/getCategory", verifyAccessToken, category.getCategory);

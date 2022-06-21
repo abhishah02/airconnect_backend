@@ -1,25 +1,55 @@
 const knex = require("../../db/config");
 
-async function addCustomer(req, res) {
-  const insertData = {
-    CUSTOMER_NAME: req.body.CUSTOMER_NAME,
-    CUSTOMER_PHONE_NO: req.body.CUSTOMER_PHONE_NO,
-    CUSTOMER_WHATSAPP_NO: req.body.CUSTOMER_WHATSAPP_NO,
-    CUSTOMER_ADDRESS: req.body.CUSTOMER_ADDRESS,
-    STATE_ID: req.body.STATE_ID,
-    CITY_ID: req.body.CITY_ID,
-    CREATED_TIME: new Date(),
-  };
-  //   console.log(req.body);
-  //   console.log(insertData);
-  const insert = await knex("tbl_customer").insert(insertData);
+async function insertEditCustomer(req, res) {
+  const {
+    CUSTOMER_ID,
+    CUSTOMER_NAME,
+    CUSTOMER_PHONE_NO,
+    CUSTOMER_WHATSAPP_NO,
+    CUSTOMER_ADDRESS,
+    STATE_ID,
+    CITY_ID,
+  } = req.body;
 
-  if (insert) {
-    console.log("Done");
-    return res.json({ st: true, msg: "Insert data successfully." });
+  const getCustomer = await knex("tbl_customer")
+    .where("CUSTOMER_ID", CUSTOMER_ID)
+    .first();
+
+  var data = {
+    CUSTOMER_NAME: CUSTOMER_NAME,
+    CUSTOMER_PHONE_NO: CUSTOMER_PHONE_NO,
+    CUSTOMER_WHATSAPP_NO: CUSTOMER_WHATSAPP_NO,
+    CUSTOMER_ADDRESS: CUSTOMER_ADDRESS,
+    STATE_ID: STATE_ID,
+    CITY_ID: CITY_ID,
+  };
+
+  if (getCustomer) {
+    data.UPDATED_TIME = new Date();
+
+    const update = await knex("tbl_customer")
+      .update(data)
+      .where({ CUSTOMER_ID: CUSTOMER_ID });
+
+    if (update) {
+      console.log("Update");
+      return res.json({ st: true, msg: "Update data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Update data Failed." });
+    }
   } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Insert data Failed." });
+    data.CREATED_TIME = new Date();
+
+    const insert = await knex("tbl_customer").insert(data);
+
+    if (insert) {
+      console.log("Done");
+      return res.json({ st: true, msg: "Insert data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: true, msg: "Insert data Failed." });
+    }
   }
 }
 
@@ -112,38 +142,12 @@ async function deleteCustomer(req, res) {
   }
 }
 
-async function updateCustomer(req, res) {
-  const id = req.body.CUSTOMER_ID;
-  var Data = {
-    CUSTOMER_NAME: req.body.CUSTOMER_NAME,
-    CUSTOMER_PHONE_NO: req.body.CUSTOMER_PHONE_NO,
-    CUSTOMER_WHATSAPP_NO: req.body.CUSTOMER_WHATSAPP_NO,
-    CUSTOMER_ADDRESS: req.body.CUSTOMER_ADDRESS,
-    CITY_ID: req.body.CITY_ID,
-    STATE_ID: req.body.STATE_ID,
-    UPDATED_TIME: new Date(),
-  };
-
-  const update = await knex("tbl_customer")
-    .update(Data)
-    .where({ CUSTOMER_ID: id });
-
-  if (update) {
-    console.log("Update");
-    return res.json({ st: true, msg: "Update data successfully." });
-  } else {
-    console.log("Fail");
-    return res.json({ st: true, msg: "Update data Failed." });
-  }
-}
-
 const customer = {
-  addCustomer,
+  insertEditCustomer,
   getStateData,
   getCityData,
   getCustomer,
   deleteCustomer,
-  updateCustomer,
 };
 
 module.exports = customer;

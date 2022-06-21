@@ -1,45 +1,47 @@
 const knex = require("../../db/config");
 
-async function addCategory(req, res) {
-  const insertData = {
-    CATEGORY_NAME: req.body.CATEGORY_NAME,
-    CATEGORY_DESCRIPTION: req.body.CATEGORY_DESCRIPTION,
-    DESCRIPTION_IMAGE: "images/" + req.file.filename,
-    CREATED_TIME: new Date(),
+async function insertEditCategory(req, res) {
+  const { CATEGORY_ID, CATEGORY_NAME, CATEGORY_DESCRIPTION } = req.body;
+
+  const getCategory = await knex("tbl_category")
+    .where("CATEGORY_ID", CATEGORY_ID)
+    .first();
+
+  var data = {
+    CATEGORY_NAME: CATEGORY_NAME,
+    CATEGORY_DESCRIPTION: CATEGORY_DESCRIPTION,
   };
 
-  const insert = await knex("tbl_category").insert(insertData);
+  if (getCategory) {
+    if (req.file) {
+      data.DESCRIPTION_IMAGE = "images/" + req.file.filename;
+    }
+    data.UPDATED_TIME = new Date();
 
-  if (insert) {
-    console.log("Done");
-    return res.json({ st: true, msg: "Insert data successfully." });
+    const update = await knex("tbl_category")
+      .update(data)
+      .where({ CATEGORY_ID: CATEGORY_ID });
+
+    if (update) {
+      console.log("Update");
+      return res.json({ st: true, msg: "Update data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: false, msg: "Update data Failed." });
+    }
   } else {
-    console.log("Fail");
-    return res.json({ st: false, msg: "Insert data Failed." });
-  }
-}
+    data.DESCRIPTION_IMAGE = "images/" + req.file.filename;
+    data.CREATED_TIME = new Date();
 
-async function updateCategory(req, res) {
-  const id = req.body.CATEGORY_ID;
-  var Data = {
-    CATEGORY_NAME: req.body.CATEGORY_NAME,
-    CATEGORY_DESCRIPTION: req.body.CATEGORY_DESCRIPTION,
-    UPDATED_TIME: new Date(),
-    // DESCRIPTION_IMAGE: Data.IMAGE[0].DESCRIPTION_IMAGE,
-  };
-  if (req.file) {
-    Data.DESCRIPTION_IMAGE = "images/" + req.file.filename;
-  }
-  const update = await knex("tbl_category")
-    .update(Data)
-    .where({ CATEGORY_ID: id });
+    const insert = await knex("tbl_category").insert(data);
 
-  if (update) {
-    console.log("Update");
-    return res.json({ st: true, msg: "Update data successfully." });
-  } else {
-    console.log("Fail");
-    return res.json({ st: false, msg: "Update data Failed." });
+    if (insert) {
+      console.log("Done");
+      return res.json({ st: true, msg: "Insert data successfully." });
+    } else {
+      console.log("Fail");
+      return res.json({ st: false, msg: "Insert data Failed." });
+    }
   }
 }
 
@@ -115,8 +117,7 @@ async function deleteCategory(req, res) {
 }
 
 const category = {
-  addCategory,
-  updateCategory,
+  insertEditCategory,
   getCategory,
   deleteCategory,
 };
